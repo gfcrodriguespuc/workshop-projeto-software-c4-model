@@ -1,4 +1,8 @@
 @startuml
-class ArrayList implements List
-class ArrayList extends AbstractList
+Object <|-- ArrayList
+
+Object : equals()
+ArrayList : Object[] elementData
+ArrayList : size()
+
 @enduml
