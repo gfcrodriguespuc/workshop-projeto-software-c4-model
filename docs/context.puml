@@ -1,0 +1,19 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+' uncomment the following line and comment the first to use locally
+' !include C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Sistema de clínica veterinária - Diagrama de Contexto
+
+Person(clinic_employee_person, "Funcionário da clínica", $type="Person")
+System(spring_pet_clinic_system, "Spring PetClinic", "Permite funcionáios visualizarem e gerenciarem informações sobre veterinários, clientes e seus respectivos pets.", $type="Software System")
+
+System_Ext(mail_system, "E-mail system", "The internal Microsoft Exchange e-mail system.")
+
+Rel(clinic_employee_person, spring_pet_clinic_system, "Uses")
+Rel_Back(clinic_employee_person, mail_system, "Sends e-mails to")
+Rel_Neighbor(spring_pet_clinic_system, mail_system, "Sends e-mails", "SMTP")
+
+@enduml
