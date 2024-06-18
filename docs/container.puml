@@ -1,41 +1,37 @@
-@startuml "messagebus"
+@startuml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 ' uncomment the following line and comment the first to use locally
 ' !include C4_Container.puml
 
-AddElementTag("microService", $shape=EightSidedShape(), $bgColor="CornflowerBlue", $fontColor="white", $legendText="micro service\neight sided")
-AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="lightSkyBlue", $fontColor="white")
+' LAYOUT_TOP_DOWN()
+' LAYOUT_AS_SKETCH()
+LAYOUT_WITH_LEGEND()
 
-SHOW_PERSON_OUTLINE()
+title Container diagram for Internet Banking System
 
-Person(customer, Customer, "A customer")
+Person(customer, Customer, "A customer of the bank, with personal bank accounts")
 
-System_Boundary(c1, "Customer Information") {
-    Container(app, "Customer Application", "Javascript, Angular", "Allows customers to manage their profile")
-    Container(customer_service, "Customer Service", "Java, Spring Boot", "The point of access for customer information", $tags = "microService")
-    Container(message_bus, "Message Bus", "RabbitMQ", "Transport for business events")
-    Container(reporting_service, "Reporting Service", "Ruby", "Creates normalised data for reporting purposes", $tags = "microService")
-    Container(audit_service, "Audit Service", "C#/.NET", "Provides organisation-wide auditing facilities", $tags = "microService")
-    ContainerDb(customer_db, "Customer Database", "Oracle 12c", "Stores customer information", $tags = "storage")
-    ContainerDb(reporting_db, "Reporting Database", "MySQL", "Stores a normalized version of all business data for ad hoc reporting purposes", $tags = "storage")
-    Container(audit_store, "Audit Store", "Event Store", "Stores information about events that have happened", $tags = "storage")
+System_Boundary(c1, "Internet Banking") {
+    Container(web_app, "Web Application", "Java, Spring MVC", "Delivers the static content and the Internet banking SPA")
+    Container(spa, "Single-Page App", "JavaScript, Angular", "Provides all the Internet banking functionality to customers via their web browser")
+    Container(mobile_app, "Mobile App", "C#, Xamarin", "Provides a limited subset of the Internet banking functionality to customers via their mobile device")
+    ContainerDb(database, "Database", "SQL Database", "Stores user registration information, hashed auth credentials, access logs, etc.")
+    Container(backend_api, "API Application", "Java, Docker Container", "Provides Internet banking functionality via API")
 }
 
-Rel_D(customer, app, "Uses", "HTTPS")
+System_Ext(email_system, "E-Mail System", "The internal Microsoft Exchange system")
+System_Ext(banking_system, "Mainframe Banking System", "Stores all of the core banking information about customers, accounts, transactions, etc.")
 
-Rel_D(app, customer_service, "Updates customer information using", "async, JSON/HTTPS")
+Rel(customer, web_app, "Uses", "HTTPS")
+Rel(customer, spa, "Uses", "HTTPS")
+Rel(customer, mobile_app, "Uses")
 
-Rel_U(customer_service, app, "Sends events to", "WebSocket")
-Rel_U(customer_service, message_bus, "Sends customer update events to")
-Rel(customer_service, customer_db, "Stores data in", "JDBC")
+Rel_Neighbor(web_app, spa, "Delivers")
+Rel(spa, backend_api, "Uses", "async, JSON/HTTPS")
+Rel(mobile_app, backend_api, "Uses", "async, JSON/HTTPS")
+Rel_Back_Neighbor(database, backend_api, "Reads from and writes to", "sync, JDBC")
 
-Rel(message_bus, reporting_service, "Sends customer update events to")
-Rel(message_bus, audit_service, "Sends customer update events to")
-
-Rel(reporting_service, reporting_db, "Stores data in")
-Rel(audit_service, audit_store, "Stores events in")
-
-Lay_R(reporting_service, audit_service)
-
-SHOW_LEGEND()
+Rel_Back(customer, email_system, "Sends e-mails to")
+Rel_Back(email_system, backend_api, "Sends e-mails using", "sync, SMTP")
+Rel_Neighbor(backend_api, banking_system, "Uses", "sync/async, XML/HTTPS")
 @enduml

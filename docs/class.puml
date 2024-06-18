@@ -1,8 +1,28 @@
 @startuml
-Object <|-- ArrayList
 
-Object : equals()
-ArrayList : Object[] elementData
-ArrayList : size()
+set separator none
+
+exception InternetBankingaSystemException
+
+package com.bigbankplc.internetbanking.component.mainframe {
+    () MainframeBankingSystemFacade
+    exception MainframeBankingSystemException
+
+    InternetBankingaSystemException <|-- MainframeBankingSystemException
+
+    MainframeBankingSystemFacade -- MainframeBankingSystemFacadeImpl
+    MainframeBankingSystemFacadeImpl ..> MainframeBankingSystemException : +throws
+    MainframeBankingSystemFacadeImpl ..> GetBalanceResponse : +parses
+    MainframeBankingSystemFacadeImpl ..> BankingSystemConnection : +uses
+    MainframeBankingSystemFacadeImpl ..> GetBalanceRequest : +creates
+
+    abstract AbstractRequest
+    abstract AbstractResponse
+
+    AbstractRequest <|-- GetBalanceRequest
+    AbstractResponse <|-- GetBalanceResponse
+    BankingSystemConnection ..> AbstractRequest : +sends
+    BankingSystemConnection ..> AbstractResponse : +receives
+}
 
 @enduml
